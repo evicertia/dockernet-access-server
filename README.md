@@ -6,4 +6,5 @@ This is partly based on previous work by:
  * https://github.com/kylemanna/docker-openvpn
  * https://github.com/wojas/docker-mac-network
  * https://github.com/fardjad/docker-network-exposer
+ * https://github.com/ruudud/devdns
 

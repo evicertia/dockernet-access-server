@@ -8,8 +8,9 @@ if [ ! -f "/etc/openvpn/openvpn.conf" ]; then
 	echo "Generating openvpn server config..."
 
 	rm -f /etc/openvpn/ovpn_env.sh
-	ovpn_genconfig -d -D -b -u udp://localhost \
+	ovpn_genconfig -d -D -b -N -u udp://localhost \
 		-e 'persist-remote-ip' \
+		-e 'script-security 2' \
 		-e 'client-connect /usr/local/sbin/on-client-connect.sh' \
 		-p "route 172.16.0.0 255.240.0.0" \
 		-p "dhcp-option DOMAIN test"

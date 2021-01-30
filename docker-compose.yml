@@ -5,18 +5,19 @@ services:
   dns:
     image: ruudud/devdns
     container_name: dockernet-dns-server
-    hostname: dockernet-dns-server.docker
-    #init: true
+    hostname: dockernet-dns-server
+    domainname: docker
+    init: true
     restart: unless-stopped
-    #entrypoint: /wait-for-it.sh dockernet-openvpn-server.docker:1194 -- /run.sh
+    entrypoint: /main.sh
     network_mode: bridge
     cap_add:
       - NET_ADMIN
     environment:
-      DNS_DOMAIN: test
+      DNS_DOMAIN: ~
       FALLBACK_DNS: 192.168.65.1  #< FIXME: Fetch address dynamically (using gateway.docker.internal)
     volumes:
-      - ./scripts/wait-for-it.sh:/wait-for-it.sh:ro
+      - ./scripts/dnssrv.sh:/main.sh:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     healthcheck:
       test: ["CMD-SHELL", "nc -w0 -z -n 127.0.0.1 53"]
@@ -27,7 +28,8 @@ services:
   openvpn:
     image: kylemanna/openvpn
     container_name: dockernet-openvpn-server
-    hostname: dockernet-openvpn-server.docker
+    hostname: dockernet-openvpn-server
+    domainname: docker
     restart: unless-stopped
     entrypoint: /main.sh
     network_mode: bridge
