@@ -15,7 +15,7 @@ services:
       - NET_ADMIN
     environment:
       DNS_DOMAIN: ~
-      FALLBACK_DNS: 192.168.65.1  #< FIXME: Fetch address dynamically (using gateway.docker.internal)
+      FALLBACK_DNS: gateway.docker.internal
     volumes:
       - ./scripts/dnssrv.sh:/main.sh:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -31,7 +31,7 @@ services:
     hostname: dockernet-openvpn-server
     domainname: docker
     restart: unless-stopped
-    entrypoint: /main.sh
+    entrypoint: /ovpnsrv.sh
     network_mode: bridge
     cap_add:
       - NET_ADMIN
@@ -43,9 +43,10 @@ services:
       - "1194:1194/udp"
     environment: []
     volumes:
-      - ./scripts/main.sh:/main.sh:ro
+      - ./scripts/ovpnsrv.sh:/ovpnsrv.sh:ro
       - ./scripts/on-client-connect.sh:/usr/local/sbin/on-client-connect.sh:ro
-      - ./conf:/etc/openvpn
+      - ./conf/pki:/etc/openvpn/pki
+      - ./conf/dockernet.ovpn:/etc/openvpn/dockernet.ovpn
     links:
       - dns
     depends_on:

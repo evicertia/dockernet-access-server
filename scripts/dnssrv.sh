@@ -198,7 +198,7 @@ setup_listener(){
 				reload_dnsmasq
 				;;
 			die)
-				name=$(echo "$meta" | grep -Eow "name=[a-zA-Z0-9.-_]+" | cut -d= -f2)
+				name=$(echo "$meta" | grep -Eow "name=[a-zA-Z0-9.-_]+" | cut -d= -f2 |head -n 1)
 				[[ -z "$name" ]] && continue
 
 				del_container_records "$name"
@@ -257,6 +257,13 @@ EOF
 }
 
 set_fallback_dns(){
+	[ -z "${fallbackdns}" ] && print_error "Missing FALLBACK_DNS env variable." && exit 254
+
+	if ! [[ ${fallbackdns} =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+		fallbackdns=$(getent hosts "${fallbackdns}" | awk '{ print $1 }')
+		[ -z "${fallbackdns}" ] && print_error "Unable to resolve FALLBACK_DNS address." && exit 254
+	fi
+
 	sed -i "s/{{FALLBACK_DNS}}/${fallbackdns}/" "/etc/dnsmasq.conf"
 	echo "Fallback DNS set to ${fallbackdns}"
 }
@@ -277,7 +284,7 @@ ${c}       | |_| | |\  |___) |  ___) |  __| |   \ V |  __| |
 ${c}       |____/|_| \_|____/  |____/ \___|_|    \_/ \___|_|
 ${c}
 EOF
-	echo ""
+	echo -e "${RESET}"
 }
 
 mkdir -p "$dnsmasq_path"
