@@ -1,5 +1,6 @@
 # dockernet-access-server
-A docker-compose setup in order to provide access to docker's default bridge network by exposing an openvpn server.
+A docker container enabling access to docker's internal (bridge) network, by bundling an openvpn & dns server.
+Also included a docker-compose setup which can be used instead of the single container bundling openvpn & dns server. 
 
 # Using docker image
 An example docker-compose code to instantate this image follows:
@@ -37,6 +38,8 @@ networks:
     driver: bridge
 
 ```
+
+On startup, a new file would be created at .tunnel/dockernet.ovpn which can be imported into tunnelbrik/viscosity.
 
 # Extra credits
 This is partly based on previous work by:

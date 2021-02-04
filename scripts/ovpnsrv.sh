@@ -9,21 +9,11 @@ LOCALROUTE=$(ip -4 route |egrep  "src[[:space:]]+$(echo -n $LOCALADDR|sed -e 's/
 
 : ${OVPN_DOMAIN:=test}
 : ${OVPN_NETWORK:=$LOCALROUTE}
+: ${OVPN_ENDPOINT:=udp://localhost}
 : ${OVPN_CLIENTCFG:=dockernet.ovpn}
-
+: ${OVPN_NETNAME:=DOCKERNET}
 
 RESET="\e[0;0m"
-RED="\e[0;31;49m"
-BRED="\e[1;31m"
-BIRED="\e[1;91m"
-RRED="\e[31;7m"
-GREEN="\e[0;32;49m"
-BGREE="\e[1;32m"
-YELLOW="\e[0;33;49m"
-BYELLOW="\e[1;33m"
-BPURPLE="\e[1;35m"
-BIPURPLE="\e[1;95m"
-BOLD="\e[1m"
 
 b=$(echo -en "\e[1;35m")
 c=$(echo -en "\e[1;96m")
@@ -42,36 +32,40 @@ ${c}
 EOF
 echo -e "${RESET}"
 
+GENCLIENTCFG=0
 
-if [ ! -f "/etc/openvpn/openvpn.conf" ]; then
+if [ "$OVPN_KEEPCONFIG" != "1" -o ! -f "/etc/openvpn/openvpn.conf" ]; then
 	echo "Generating openvpn server config..."
 
-	rm -f /etc/openvpn/ovpn_env.sh
+	rm -f /etc/openvpn/openvpn.conf /etc/openvpn/ovpn_env.sh
 	source <(ipcalc -n -m "$OVPN_NETWORK")
-	ovpn_genconfig -d -D -b -N -u udp://localhost \
+	ovpn_genconfig -d -D -b -N -u "${OVPN_ENDPOINT}" \
+		-k '2 5' \
 		-e 'persist-remote-ip' \
 		-e 'script-security 2' \
 		-e 'client-connect /usr/local/sbin/on-client-connect.sh' \
 		-p "route $NETWORK $NETMASK" \
 		-p "dhcp-option DOMAIN ${OVPN_DOMAIN}"
+	GENCLIENTCFG=1
 
 	echo "Generating openvpn server config... done"
 fi
 
-if [ ! -f /etc/openvpn/pki/index.txt ]; then
+if [ ! -d /etc/openvpn/pki ]; then
 	echo "Generating openvpn pki data..."
 
 	echo localhost | ovpn_initpki nopass
 	easyrsa build-client-full client nopass
+	GENCLIENTCFG=1
 
 	echo "Generating openvpn pki data... done"
 fi
 
-if [ ! -f "/etc/openvpn/$OVPN_CLIENTCFG" ]; then
+if [ "$GENCLIENTCFG" == "1" -o ! -f "/etc/openvpn/$OVPN_CLIENTCFG" ]; then
 	echo "Generating openvpn client config..."
 
 	ovpn_getclient client > "/etc/openvpn/$OVPN_CLIENTCFG"
-	echo '#viscosity name DOCKERNET' >> "/etc/openvpn/$OVPN_CLIENTCFG"
+	echo "#viscosity name $OVPN_NETNAME" >> "/etc/openvpn/$OVPN_CLIENTCFG"
 
 	echo "Generating openvpn client config... done"
 fi

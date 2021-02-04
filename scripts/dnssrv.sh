@@ -22,7 +22,8 @@ BRED="\e[1;31m"
 BIRED="\e[1;91m"
 RRED="\e[31;7m"
 GREEN="\e[0;32;49m"
-BGREE="\e[1;32m"
+BGREEN="\e[1;32m"
+BIGREEN="\e[1;92m"
 YELLOW="\e[0;33;49m"
 BYELLOW="\e[1;33m"
 BPURPLE="\e[1;35m"
@@ -269,7 +270,7 @@ set_fallback_dns(){
 }
 
 print_startup_msg(){
-	b=$(echo -en "${BPURPLE}")
+	b=$(echo -en "${BIGREEN}")
 	c=$(echo -en "${BRED}")
 	cat <<EOF
 ${b}  ____             _             _   _      _
