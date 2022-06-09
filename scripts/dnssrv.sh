@@ -237,8 +237,13 @@ set_base_config(){
 	echo "hostsdir=${dnsmasq_hostsdir}" > "${dnsmasq_path}/_hosts.conf"
 
 	if [ -n "$domain" ]; then
+		echo -e "auth-server=${domain}\nauth-zone=${domain}\n" > "${dnsmasq_path}/authzone.conf"
+		echo -e "${GREEN}+ Set dnsmasq as authoritative for ${domain}${RESET}"
 		echo "address=/.${domain}/${hostmachineip}" > "${dnsmasq_path}/hostmachine.conf"
 		echo -e "${GREEN}+ Added *.${domain} → ${hostmachineip}${RESET}"
+	elif [ -n "$(hostname -d)" ]; then
+		echo -e "auth-server=$(hostname -d)\nauth-zone=$(hostname -d)\n" > "${dnsmasq_path}/authzone.conf"
+		echo -e "${GREEN}+ Set dnsmasq as authoritative for $(hostname -d)${RESET}"
 	fi
 }
 

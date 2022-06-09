@@ -26,6 +26,7 @@ ENV 	DNS_DOMAIN="" \
 	FALLBACK_DNS="gateway.docker.internal"
 
 EXPOSE 53/udp
+EXPOSE 53/tcp
 VOLUME /etc/openvpn
 
 CMD ["/main.sh", "/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
