@@ -12,6 +12,7 @@ LOCALROUTE=$(ip -4 route |egrep  "src[[:space:]]+$(echo -n $LOCALADDR|sed -e 's/
 : ${OVPN_ENDPOINT:=udp://localhost}
 : ${OVPN_CLIENTCFG:=dockernet.ovpn}
 : ${OVPN_NETNAME:=DOCKERNET}
+: ${OVPN_KEEPALIVE:=2 15}
 
 RESET="\e[0;0m"
 
@@ -40,7 +41,7 @@ if [ "$OVPN_KEEPCONFIG" != "1" -o ! -f "/etc/openvpn/openvpn.conf" ]; then
 	rm -f /etc/openvpn/openvpn.conf /etc/openvpn/ovpn_env.sh
 	source <(ipcalc -n -m "$OVPN_NETWORK")
 	ovpn_genconfig -d -D -b -N -u "${OVPN_ENDPOINT}" \
-		-k '2 5' \
+		-k "${OVPN_KEEPALIVE}" \
 		-e 'persist-remote-ip' \
 		-e 'script-security 2' \
 		-e 'client-connect /usr/local/sbin/on-client-connect.sh' \
