@@ -40,13 +40,21 @@ if [ "$OVPN_KEEPCONFIG" != "1" -o ! -f "/etc/openvpn/openvpn.conf" ]; then
 
 	rm -f /etc/openvpn/openvpn.conf /etc/openvpn/ovpn_env.sh
 	source <(ipcalc -n -m "$OVPN_NETWORK")
-	ovpn_genconfig -d -D -b -N -u "${OVPN_ENDPOINT}" \
-		-k "${OVPN_KEEPALIVE}" \
+
+	ovpn_command="ovpn_genconfig -d -D -b -N -u \"${OVPN_ENDPOINT}\" \
+		-k \"${OVPN_KEEPALIVE}\" \
 		-e 'persist-remote-ip' \
 		-e 'script-security 2' \
 		-e 'client-connect /usr/local/sbin/on-client-connect.sh' \
-		-p "route $NETWORK $NETMASK" \
-		-p "dhcp-option DOMAIN ${OVPN_DOMAIN}"
+		-p \"route $NETWORK $NETMASK\""   
+
+	IFS=' ' read -ra domain_values <<< "$OVPN_DOMAIN"
+	for domain_value in "${domain_values[@]}"; do
+		ovpn_command+=" -p \"dhcp-option DOMAIN $domain_value\""
+	done
+
+	eval $ovpn_command
+
 	GENCLIENTCFG=1
 
 	echo "Generating openvpn server config... done"
