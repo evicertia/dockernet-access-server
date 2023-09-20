@@ -177,7 +177,12 @@ set_container_records(){
 	IFS=' ' read -ra alias_array <<< "$aliases"
 	if [ -n "$hostname" -a -n "$domainname" -a -n "$aliases" -a ${#alias_array[@]} -gt 0 ]; then
 		for alias in "${alias_array[@]}"; do
-			add_record "${alias}" "$ip" "$safename"
+			# If alias doesn't end with $domainname or it's value is like former hostname container (with or without domain) we just ignore alias...
+			if [[ "$alias" == *"$domainname" ]] && [[ "$alias" != "$hostname" ]] && [[ "$alias" != "${hostname}.${domainname}" ]]; then
+				add_record "${alias}" "$ip" "$safename"
+			else
+				echo "Ignoring alias ${alias}..."
+			fi
 		done
 	fi
 }
