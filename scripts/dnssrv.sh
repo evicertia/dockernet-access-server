@@ -151,7 +151,7 @@ set_wildcard_record(){
 }
 
 set_container_records(){
-	local cid="$1" ip name safename record cnetwork hostname domainname
+	local cid="$1" ip name safename record cnetwork hostname domainname aliases
 	cnetwork="$network"
 
 	# set the network to the first detected network, if any
@@ -161,17 +161,32 @@ set_container_records(){
 		# if it inherited its network from another container
 		[[ -z "$cnetwork" ]] && print_error "network" && return 1
 	fi
+
 	ip=$(docker inspect -f "{{with index .NetworkSettings.Networks \"${cnetwork}\"}}{{.IPAddress}}{{end}}" "$cid" | head -n1)
 	name=$(get_name "$cid")
 	safename=$(get_safename "$name")
 	hostname=$(get_hostname "$cid")
 	domainname=$(get_domainname "$cid")
+	aliases=$(docker inspect -f '{{range .NetworkSettings.Networks.'$cnetwork'.Aliases}}{{.}} {{end}}' "$cid")
 
 	[ -n "$domain" ] && add_record "${safename}.${domain}" "$ip" "$safename" || :
 	[ -n "$hostname" -a -n "$domain" -a "$domain" != "$domainname" ] && add_record "${hostname}.${domain}" "$ip" "$safename" || :
 	[ -n "$hostname" -a -n "$domainname" ] && add_record "${hostname}.${domainname}" "$ip" "$safename" || :
 	[ -z "$hostname" -a -n "$domainname" ] && set_wildcard_record "$domainname" "$ip" "$safename" || :
+
+	IFS=' ' read -ra alias_array <<< "$aliases"
+	if [ -n "$hostname" -a -n "$domainname" -a -n "$aliases" -a ${#alias_array[@]} -gt 0 ]; then
+		for alias in "${alias_array[@]}"; do
+			# If alias doesn't end with $domainname or it's value is like former hostname container (with or without domain) we just ignore alias...
+			if [[ "$alias" == *"$domainname" ]] && [[ "$alias" != "$hostname" ]] && [[ "$alias" != "${hostname}.${domainname}" ]]; then
+				add_record "${alias}" "$ip" "$safename"
+			else
+				echo "Ignoring alias ${alias}..."
+			fi
+		done
+	fi
 }
+
 
 del_container_records(){
 	local name="$1" safename=$(get_safename "$1")
