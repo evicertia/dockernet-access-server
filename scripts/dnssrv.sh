@@ -140,12 +140,12 @@ set_wildcard_record(){
 	[[ "$ip" == "<no value>" ]] && print_error "ip" "$record" && return 1
 
 	if [[ ! -f "$fpath" ]]; then
-		echo -e "${GREEN}+ Adding *.${record} → ${ip}${RESET}"
+		echo -e "${GREEN}+ Adding *${record} → ${ip}${RESET}"
 	else
-		echo -e "${YELLOW}+ Replacing *.${record} → ${ip}${RESET}"
+		echo -e "${YELLOW}+ Replacing *${record} → ${ip}${RESET}"
 	fi
 
-	echo "address=/.${record}/${ip}" > "$fpath"
+	echo "address=/.${record}/${ip}" >> "$fpath"
 
 	restart=1
 }
