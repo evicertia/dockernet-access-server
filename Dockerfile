@@ -1,13 +1,13 @@
 ARG VERSION="0.0.0.0"
 FROM kylemanna/openvpn:latest
 
-LABEL maintainer="Pablo Ruiz <pablo@evicertia.com"
+LABEL maintainer="Pablo Ruiz <pablo@evicertia.com>"
 
 RUN 	apk update \
 	&& apk --no-cache add bash curl dnsmasq ed supervisor \
 	&& mkdir -p /etc/dnsmasq.d
 
-RUN curl -sSL https://download.docker.com/linux/static/stable/x86_64/docker-18.09.5.tgz | tar zx -C /tmp \
+RUN curl -sSL https://download.docker.com/linux/static/stable/x86_64/docker-26.1.4.tgz | tar zx -C /tmp \
 	&& mv /tmp/docker/docker /usr/local/bin/ \
 	&& rm -rf /tmp/docker 
 
