@@ -167,7 +167,7 @@ set_container_records(){
 	safename=$(get_safename "$name")
 	hostname=$(get_hostname "$cid")
 	domainname=$(get_domainname "$cid")
-	aliases=$(docker inspect -f '{{range .NetworkSettings.Networks.'$cnetwork'.Aliases}}{{.}} {{end}}' "$cid")
+	aliases=$(docker inspect -f "{{range (index .NetworkSettings.Networks \"${cnetwork}\").Aliases}}{{.}} {{end}}" "$cid")
 
 	[ -n "$domain" ] && add_record "${safename}.${domain}" "$ip" "$safename" || :
 	[ -n "$hostname" -a -n "$domain" -a "$domain" != "$domainname" ] && add_record "${hostname}.${domain}" "$ip" "$safename" || :
