@@ -1,14 +1,26 @@
-NAME   := evicertia/dockernet-access-server
-TAG    := $$(git log -1 --pretty=%h)
-IMG    := ${NAME}:${TAG}
-LATEST := ${NAME}:latest
+NAME    := evicertia/dockernet-access-server
+PLAT    := linux/amd64,linux/arm64
+CID     := $$(git log -1 --pretty=%h)
+TAG     := latest
+
+BUILDER	?= --builder cloud-evicertia-mono-builder
+BOPTS	?=
 
 build:
-	@DOCKER_BUILDKIT=1 docker build -t ${IMG} .
-	@docker tag ${IMG} ${LATEST}
+	@docker buildx build ${BOPTS} ${BUILDER} \
+		--platform=${PLAT} \
+		--build-arg "CID=${CID}" \
+		-t "${NAME}:${CID}" \
+		-t "${NAME}:${TAG}" \
+		--load .
 
 push:
-	@docker push ${NAME}
+	@docker buildx build ${BOPTS} ${BUILDER} \
+		--platform=${PLAT} \
+		--build-arg "CID=${CID}" \
+		-t "${NAME}:${CID}" \
+		-t "${NAME}:${TAG}" \
+		--push .
 
 login:
-	@docker log -u ${DOCKER_USER} -p ${DOCKER_PASS}
+	@docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}

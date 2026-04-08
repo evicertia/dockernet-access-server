@@ -1,5 +1,4 @@
-ARG VERSION="0.0.0.0"
-FROM kylemanna/openvpn:latest
+FROM nmaguiar/openvpn:latest
 
 LABEL maintainer="Pablo Ruiz <pablo@evicertia.com>"
 
@@ -7,9 +6,11 @@ RUN 	apk update \
 	&& apk --no-cache add bash curl dnsmasq ed supervisor \
 	&& mkdir -p /etc/dnsmasq.d
 
-RUN curl -sSL https://download.docker.com/linux/static/stable/x86_64/docker-26.1.4.tgz | tar zx -C /tmp \
+ARG TARGETARCH
+RUN ARCH=$(case ${TARGETARCH} in amd64) echo x86_64;; arm64) echo aarch64;; *) echo ${TARGETARCH};; esac) \
+	&& curl -sSL "https://download.docker.com/linux/static/stable/${ARCH}/docker-26.1.4.tgz" | tar zx -C /tmp \
 	&& mv /tmp/docker/docker /usr/local/bin/ \
-	&& rm -rf /tmp/docker 
+	&& rm -rf /tmp/docker
 
 COPY files/dnsmasq.conf /etc/dnsmasq.conf
 COPY files/supervisord.conf /etc/supervisord.conf
