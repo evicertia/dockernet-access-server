@@ -91,7 +91,8 @@ Once connected you should be able to:
 | `NAMING` | `default` | Container naming strategy for DNS |
 | `NETWORK` | `bridge` | Docker network to monitor |
 | `FALLBACK_DNS` | `gateway.docker.internal` | Upstream DNS server |
-| `OVPN_NETWORK` | `172.16.0.0/12` | VPN client address range |
+| `OVPN_SERVER` | `192.168.255.0/24` | VPN server subnet used to assign client IPs |
+| `OVPN_NETWORK` | `172.16.0.0/12` | Route pushed to clients for Docker network reachability |
 | `OVPN_KEEPCONFIG` | (unset) | Skip config regeneration if set |
 | `DEBUG` | (unset) | Enable bash tracing if non-empty |
 
