@@ -64,7 +64,7 @@ if [ ! -d /etc/openvpn/pki ]; then
 	echo "Generating openvpn pki data..."
 
 	echo localhost | ovpn_initpki nopass
-	easyrsa build-client-full client nopass
+	easyrsa --batch build-client-full client nopass
 	GENCLIENTCFG=1
 
 	echo "Generating openvpn pki data... done"
@@ -73,8 +73,16 @@ fi
 if [ "$GENCLIENTCFG" == "1" -o ! -f "/etc/openvpn/$OVPN_CLIENTCFG" ]; then
 	echo "Generating openvpn client config..."
 
-	ovpn_getclient client > "/etc/openvpn/$OVPN_CLIENTCFG"
-	echo "#viscosity name $OVPN_NETNAME" >> "/etc/openvpn/$OVPN_CLIENTCFG"
+	tmp_client_cfg=$(mktemp "/etc/openvpn/.${OVPN_CLIENTCFG}.tmp.XXXXXX")
+
+	if ovpn_getclient client > "$tmp_client_cfg"; then
+		echo "#viscosity name $OVPN_NETNAME" >> "$tmp_client_cfg"
+		mv "$tmp_client_cfg" "/etc/openvpn/$OVPN_CLIENTCFG"
+	else
+		rm -f "$tmp_client_cfg"
+		echo "Failed to generate openvpn client config" >&2
+		exit 1
+	fi
 
 	echo "Generating openvpn client config... done"
 fi
